@@ -83,8 +83,8 @@ public class Inventario {
         
         for (Producto p : productos) {
             // Dependiento el tipo de busqueda (criterio)
-            switch (criterio.toLowerCase()) {
-                case "nombre" -> {
+            switch (criterio) {
+                case "Nombre" -> {
                     //Chat dice que los String no devuelven null, sino false, así que no le agregué un try catch
                     //A parte, los productos siempre deberían tener un código, nombre :'D
                     if (p.getNombre().toLowerCase().contains(valorLower)) {
@@ -92,13 +92,13 @@ public class Inventario {
                     }
                 }
                     
-                case "codigo" -> {
+                case "Código" -> {
                     if (p.getCodigo().toLowerCase().contains(valorLower)) {
                         resultados.add(p);
                     }
                 }
                     
-                case "precio" -> {
+                case "Precio" -> {
                     try {
                         // Find products <= specified price
                         double precio = Double.parseDouble(valor);
@@ -110,7 +110,7 @@ public class Inventario {
                     }
                 }
                     
-                case "categoria" -> {
+                case "Categoría" -> {
                     try {
                         if (p.getCategoria().equalsIgnoreCase(valor)){
                             resultados.add(p);
@@ -120,7 +120,7 @@ public class Inventario {
                     }
                 }
             
-                case "vencimiento" -> {
+                case "Fecha de vencimiento" -> {
                     try {
                         // Find products expiring before specified date
                         LocalDate fecha = LocalDate.parse(valor, DATE_FORMATTER);
@@ -131,7 +131,7 @@ public class Inventario {
                         //Ignora los errores LOL
                     }
                 }
-                default -> // Unknown criteria - could throw exception instead
+                default ->
                     System.out.println("Criterio de búsqueda no válido: " + criterio);
             }
         }
