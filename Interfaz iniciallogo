@@ -1,0 +1,33 @@
+package interfaz;
+
+import javax.swing.*;
+import java.awt.*;
+
+public class PantallaInicio extends JFrame {
+
+    public PantallaInicio() {
+        setUndecorated(true); // sin bordes
+        setSize(400, 400);
+        setLocationRelativeTo(null); // centrado
+        setLayout(new BorderLayout());
+
+        ImageIcon icono = new ImageIcon("src/interfaz/logo.png"); // Ruta a la imagen
+        JLabel etiqueta = new JLabel(icono);
+        etiqueta.setHorizontalAlignment(JLabel.CENTER);
+        etiqueta.setVerticalAlignment(JLabel.CENTER);
+        add(etiqueta, BorderLayout.CENTER);
+    }
+
+    public static void main(String[] args) {
+        PantallaInicio splash = new PantallaInicio();
+        splash.setVisible(true);
+
+        // Esperar 3 segundos y luego mostrar el login
+        Timer timer = new Timer(3000, e -> {
+            splash.dispose(); // cerrar splash
+            new VistaLogin().setVisible(true); // mostrar login
+        });
+        timer.setRepeats(false);
+        timer.start();
+    }
+}
