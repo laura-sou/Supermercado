@@ -14,7 +14,8 @@ public class VistaAdmin extends JFrame {
     private CardLayout cardLayout;
     private JPanel contentPanel;
     private final String csvPath = "productos.csv";
-    private List<Producto> productos = new ArrayList<>();
+    private final List<Producto> productos = new ArrayList<>();
+    private JComboBox<String> comboCategoria;
 
     public VistaAdmin() {
         setTitle("Panel Administrador - Supermercado");
@@ -69,7 +70,8 @@ public class VistaAdmin extends JFrame {
 
         JTextField codigoField = new JTextField();
         JTextField nombreField = new JTextField();
-        JTextField categoriaField = new JTextField();
+        String[] categorias = {"Congelados", "Frutas y Verduras", "Despensa", "Lácteos", "Carnes", "Snacks y golosinas"};
+        comboCategoria = new JComboBox<>(categorias);
         JTextField precioField = new JTextField();
         JTextField vencimientoField = new JTextField();
         JTextField cantidadField = new JTextField();
@@ -81,7 +83,7 @@ public class VistaAdmin extends JFrame {
         panelOpciones.add(new JLabel("Nombre:"));
         panelOpciones.add(nombreField);
         panelOpciones.add(new JLabel("Categoría:"));
-        panelOpciones.add(categoriaField);
+        panelOpciones.add(comboCategoria);
         panelOpciones.add(new JLabel("Precio:"));
         panelOpciones.add(precioField);
         panelOpciones.add(new JLabel("Fecha de vencimiento (dd/MM/yyyy):"));
@@ -102,7 +104,7 @@ public class VistaAdmin extends JFrame {
             
             String codigo = codigoField.getText().trim();
             String nombre = nombreField.getText().trim();
-            String categoria = categoriaField.getText().trim();
+            String categoria = (String) comboCategoria.getSelectedItem();
             String precioStr = precioField.getText().trim();
             String vencimientoStr = vencimientoField.getText().trim();
             String cantidadStr = cantidadField.getText().trim();
@@ -134,7 +136,7 @@ public class VistaAdmin extends JFrame {
                     productos.add(new Producto(codigo, nombre, categoria, precio, fechaVencimiento, cantidad));
                     guardarProductos();
                     JOptionPane.showMessageDialog(this, "Producto agregado.");
-                    nombreField.setText(""); precioField.setText(""); categoriaField.setText("");
+                    nombreField.setText(""); precioField.setText(""); comboCategoria.setSelectedIndex(-1); codigoField.setText(""); cantidadField.setText("");
                 }
                 else {
                     JOptionPane.showMessageDialog(this, "Añade una cantidad y precio válidos.","", JOptionPane.ERROR_MESSAGE);
@@ -289,7 +291,12 @@ public class VistaAdmin extends JFrame {
             e.printStackTrace();
         }
     }
+
+    //PANEL 3 : VENTAS
+
+
     
+    //.......................................................
     private static void mostrarLogin() {
         File archivoCredenciales = new File("credenciales.txt");
         if (!archivoCredenciales.exists()) {
