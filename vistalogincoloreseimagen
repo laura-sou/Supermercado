@@ -1,0 +1,77 @@
+package interfaz;
+
+import javax.swing.*;
+import java.awt.*;
+
+public class VistaLogin extends JFrame {
+    private final JPanel loginPanel;
+    private final JTextField usuarioField;
+    private final JPasswordField contrasenaField;
+    private final JButton btnInicio;
+    private final JButton btnCancelar;
+
+    public VistaLogin() {
+        setTitle("Formulario de Login");
+        setSize(400, 350);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout());
+        getContentPane().setBackground(new Color(245, 255, 250)); // fondo suave
+
+        // Cargar imagen de usuario
+        ImageIcon iconoUsuario = new ImageIcon("src/interfaz/usuario.png");
+        JLabel imagenLabel = new JLabel(iconoUsuario);
+        imagenLabel.setHorizontalAlignment(JLabel.CENTER);
+        imagenLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        add(imagenLabel, BorderLayout.NORTH);
+
+        // Panel de login
+        loginPanel = new JPanel(new GridLayout(3, 2, 10, 10));
+        loginPanel.setBorder(BorderFactory.createEmptyBorder(10, 40, 10, 40));
+        loginPanel.setBackground(new Color(245, 255, 250)); // mismo fondo
+
+        usuarioField = new JTextField();
+        contrasenaField = new JPasswordField();
+        btnInicio = new JButton("Iniciar sesión");
+        btnCancelar = new JButton("Cancelar");
+
+        // Estilos suaves para botones
+        Color botonColor = new Color(102, 204, 255);
+        btnInicio.setBackground(botonColor);
+        btnInicio.setForeground(Color.BLACK);
+        btnCancelar.setBackground(new Color(255, 153, 153));
+        btnCancelar.setForeground(Color.BLACK);
+
+        loginPanel.add(new JLabel("Usuario:"));
+        loginPanel.add(usuarioField);
+        loginPanel.add(new JLabel("Contraseña:"));
+        loginPanel.add(contrasenaField);
+        loginPanel.add(btnInicio);
+        loginPanel.add(btnCancelar);
+
+        add(loginPanel, BorderLayout.CENTER);
+
+        // Listeners
+        btnInicio.addActionListener(e -> autenticar());
+        btnCancelar.addActionListener(e -> System.exit(0));
+    }
+
+    private void autenticar() {
+        String usuario = usuarioField.getText();
+        String contrasena = new String(contrasenaField.getPassword());
+
+        if ("cliente".equals(usuario.toLowerCase()) && "1234".equals(contrasena)) {
+            JOptionPane.showMessageDialog(this, "Login exitoso");
+            VistaCliente cliente = new VistaCliente();
+            cliente.setVisible(true);
+            this.dispose();
+        } else if ("admin".equals(usuario.toLowerCase()) && "5678".equals(contrasena)) {
+            JOptionPane.showMessageDialog(this, "¡Bienvenido, jefe!");
+            VistaAdmin admin = new VistaAdmin();
+            admin.setVisible(true);
+            this.dispose();
+        } else {
+            JOptionPane.showMessageDialog(this, "Usuario o contraseña incorrectos", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+}
