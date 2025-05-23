@@ -1,0 +1,206 @@
+package vista;
+
+import java.awt.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import javax.swing.*;
+import javax.swing.table.*;
+
+import modelo.Inventario;
+import modelo.Producto;
+
+public class VistaCatalogo extends JFrame {
+    private JTextField txtBusqueda;
+    private JComboBox<String> comboBusquedaEspecial;
+    private JComboBox<String> comboBusqueda;
+    private JTable tablaProductos;
+    private Inventario inventario;
+    private JPanel panelBusqueda;
+    private JPanel panelBotones;
+    private JButton btnBuscar;
+    private JButton btnClear;
+    private JButton btnAnadir;
+
+    // Colores
+    private final Color verdeFondo = new Color(230, 255, 230);
+    private final Color verdeEncabezado = new Color(0, 153, 0);
+    private final Color verdeFila = new Color(242, 255, 242);
+    private final Color naranja = new Color(255, 153, 51);
+    private final Color textoOscuro = new Color(33, 33, 33);
+
+    public VistaCatalogo() {
+        setTitle("Supermercado");
+        setSize(800, 700);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
+
+        inventario = new Inventario();
+        inventario.cargarProductosDesdeCSV("productos.csv");
+
+        // Panel de búsqueda
+        panelBusqueda = new JPanel(new GridLayout(5, 2, 5, 5));
+        panelBusqueda.setBackground(verdeFondo);
+
+        panelBusqueda.add(crearEtiqueta("Tipo de búsqueda"));
+        String[] busqueda = {"Código", "Nombre", "Categoría", "Precio", "Fecha de vencimiento"};
+        comboBusqueda = new JComboBox<>(busqueda);
+        comboBusqueda.setBackground(Color.WHITE);
+        panelBusqueda.add(comboBusqueda);
+
+        txtBusqueda = new JTextField();
+        comboBusquedaEspecial = new JComboBox<>();
+        comboBusquedaEspecial.setVisible(false);
+
+        comboBusqueda.addActionListener(e -> actualizarCampoBusqueda());
+
+        panelBusqueda.add(crearEtiqueta("Búsqueda"));
+        panelBusqueda.add(txtBusqueda);
+        panelBusqueda.add(comboBusquedaEspecial);
+
+        // Botones
+        panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        panelBotones.setBorder(BorderFactory.createEmptyBorder(15, 0, 0, 0));
+        panelBotones.setBackground(verdeFondo);
+
+        btnBuscar = crearBoton("Buscar");
+        btnAnadir = crearBoton("Añadir a carrito");
+        btnClear = crearBoton("Limpiar búsqueda");
+
+        panelBotones.add(btnBuscar);
+        panelBotones.add(btnClear);
+        panelBotones.add(btnAnadir);
+
+        btnBuscar.addActionListener(e -> realizarBusqueda());
+        btnClear.addActionListener(e -> limpiarBusqueda());
+
+        // Tabla
+        String[] columnas = {"Código", "Nombre", "Categoría", "Precio", "Fecha de vencimiento", "Cantidad"};
+        Object[][] datos = obtenerDatosTabla(inventario.getTodosProductos());
+        tablaProductos = new JTable(new DefaultTableModel(datos, columnas)) {
+            // Alternar colores de filas
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+                Component c = super.prepareRenderer(renderer, row, column);
+                c.setBackground(row % 2 == 0 ? Color.WHITE : verdeFila);
+                return c;
+            }
+        };
+
+        tablaProductos.setForeground(textoOscuro);
+        tablaProductos.setGridColor(Color.LIGHT_GRAY);
+        tablaProductos.setRowHeight(25);
+
+        // Estilo encabezado
+        JTableHeader header = tablaProductos.getTableHeader();
+        header.setBackground(verdeEncabezado);
+        header.setForeground(Color.WHITE);
+        header.setFont(new Font("SansSerif", Font.BOLD, 14));
+
+        // Agregar componentes al frame
+        add(panelBusqueda, BorderLayout.NORTH);
+        add(panelBotones, BorderLayout.CENTER);
+        add(new JScrollPane(tablaProductos), BorderLayout.SOUTH);
+
+        getContentPane().setBackground(verdeFondo);
+        setVisible(true);
+    }
+
+    private JLabel crearEtiqueta(String texto) {
+        JLabel label = new JLabel(texto);
+        label.setForeground(textoOscuro);
+        return label;
+    }
+
+    private JButton crearBoton(String texto) {
+        JButton boton = new JButton(texto);
+        boton.setBackground(naranja);
+        boton.setForeground(Color.WHITE);
+        boton.setFocusPainted(false);
+        boton.setFont(new Font("SansSerif", Font.BOLD, 12));
+        return boton;
+    }
+
+    private Object[][] obtenerDatosTabla(List<Producto> productos) {
+        Object[][] datos = new Object[productos.size()][6];
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        for (int i = 0; i < productos.size(); i++) {
+            Producto p = productos.get(i);
+            datos[i][0] = p.getCodigo();
+            datos[i][1] = p.getNombre();
+            datos[i][2] = p.getCategoria();
+            datos[i][3] = String.format("$%.2f", p.getPrecio());
+            datos[i][4] = p.getfechaVencimiento().format(formatter);
+            datos[i][5] = p.getCantidad();
+        }
+
+        return datos;
+    }
+
+    private void actualizarCampoBusqueda() {
+        String tipo = (String) comboBusqueda.getSelectedItem();
+        boolean esCombo = tipo.equals("Categoría") || tipo.equals("Fecha de vencimiento");
+
+        txtBusqueda.setVisible(!esCombo);
+        comboBusquedaEspecial.setVisible(esCombo);
+
+        if (esCombo) {
+            DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
+
+            if (tipo.equals("Categoría")) {
+                String[] categorias = {"Congelados", "Frutas y Verduras", "Despensa", "Lácteos", "Carnes", "Snacks y golosinas"};
+                for (String categoria : categorias) model.addElement(categoria);
+            }
+
+            if (tipo.equals("Fecha de vencimiento")) {
+                String[] rangos = {"7 días", "14 días", "1 mes"};
+                for (String rango : rangos) model.addElement(rango);
+            }
+
+            comboBusquedaEspecial.setModel(model);
+        }
+
+        panelBusqueda.revalidate();
+        panelBusqueda.repaint();
+    }
+
+    private void realizarBusqueda() {
+        String criterio = (String) comboBusqueda.getSelectedItem();
+        String valor = comboBusquedaEspecial.isVisible()
+                ? (String) comboBusquedaEspecial.getSelectedItem()
+                : txtBusqueda.getText();
+
+        if ("Fecha de vencimiento".equals(criterio)) {
+            valor = calcularFechaDesdeRango(valor);
+        }
+
+        List<Producto> resultados = inventario.buscarProductos(criterio, valor);
+        Object[][] datos = obtenerDatosTabla(resultados);
+
+        tablaProductos.setModel(new DefaultTableModel(datos, new String[] {
+            "Código", "Nombre", "Categoría", "Precio", "Fecha de vencimiento", "Cantidad"
+        }));
+    }
+
+    private String calcularFechaDesdeRango(String rango) {
+        LocalDate hoy = LocalDate.now();
+        return switch (rango) {
+            case "7 días" -> hoy.plusDays(7).toString();
+            case "14 días" -> hoy.plusDays(14).toString();
+            case "1 mes" -> hoy.plusMonths(1).toString();
+            default -> hoy.toString();
+        };
+    }
+
+    private void limpiarBusqueda() {
+        Object[][] datos = obtenerDatosTabla(inventario.getTodosProductos());
+
+        tablaProductos.setModel(new DefaultTableModel(datos, new String[] {
+            "Código", "Nombre", "Categoría", "Precio", "Fecha de vencimiento", "Cantidad"
+        }));
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new VistaCatalogo());
+    }
+}
