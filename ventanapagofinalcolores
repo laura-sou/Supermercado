@@ -1,0 +1,189 @@
+import javax.swing.*;
+import java.awt.*;
+
+public class VentanaPago extends JFrame {
+
+    public VentanaPago() {
+        setTitle("Método de Pago");
+        setSize(320, 400);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        JPanel panel = new JPanel(new GridLayout(4, 1, 10, 10));
+        panel.setBackground(new Color(204, 255, 204)); // Verde suave
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        JButton btnNequi = crearBotonConIcono("Nequi", "nequi.jpg");
+        JButton btnDaviplata = crearBotonConIcono("Daviplata", "daviplata.png");
+        JButton btnEfectivo = crearBotonConIcono("Efectivo", "efectivo.png");
+        JButton btnTarjeta = crearBotonConIcono("Tarjeta", "tarjeta.png");
+
+        panel.add(btnNequi);
+        panel.add(btnDaviplata);
+        panel.add(btnEfectivo);
+        panel.add(btnTarjeta);
+
+        add(panel);
+
+        btnNequi.addActionListener(e -> abrirVentanaPagoMovil("Nequi", this));
+        btnDaviplata.addActionListener(e -> abrirVentanaPagoMovil("Daviplata", this));
+        btnEfectivo.addActionListener(e -> abrirVentanaEfectivo(this));
+        btnTarjeta.addActionListener(e -> abrirVentanaTarjeta(this));
+    }
+
+    private JButton crearBotonConIcono(String texto, String rutaIcono) {
+        ImageIcon icono = null;
+        try {
+            icono = new ImageIcon(getClass().getResource(rutaIcono));
+            Image imagen = icono.getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH);
+            icono = new ImageIcon(imagen);
+        } catch (Exception e) {
+            System.out.println("No se pudo cargar la imagen: " + rutaIcono);
+        }
+
+        JButton boton = new JButton(texto, icono);
+        boton.setHorizontalTextPosition(SwingConstants.CENTER); // Texto centrado
+        boton.setVerticalTextPosition(SwingConstants.BOTTOM);   // Texto debajo del ícono
+        boton.setHorizontalAlignment(SwingConstants.CENTER);    // Contenido horizontal centrado
+        boton.setVerticalAlignment(SwingConstants.CENTER);      // Contenido vertical centrado
+        boton.setBackground(new Color(255, 204, 153)); // Naranja suave
+        boton.setFont(new Font("Arial", Font.BOLD, 14));
+        boton.setIconTextGap(10);
+        return boton;
+    }
+
+    private void abrirVentanaPagoMovil(String metodo, JFrame ventanaPrincipal) {
+        JFrame ventana = new JFrame("Pago con " + metodo);
+        ventana.setSize(300, 250);
+        ventana.setLocationRelativeTo(null);
+        ventana.setLayout(new GridLayout(4, 2, 10, 10));
+        ventana.getContentPane().setBackground(new Color(204, 255, 204));
+
+        JTextField nombre = new JTextField();
+        JTextField telefono = new JTextField();
+        JTextField transaccion = new JTextField();
+        JButton confirmar = new JButton("Confirmar");
+        confirmar.setBackground(new Color(255, 204, 153));
+
+        ventana.add(new JLabel("Nombre:"));
+        ventana.add(nombre);
+        ventana.add(new JLabel("Teléfono (7 dígitos):"));
+        ventana.add(telefono);
+        ventana.add(new JLabel("No. Transacción (números):"));
+        ventana.add(transaccion);
+        ventana.add(new JLabel());
+        ventana.add(confirmar);
+
+        confirmar.addActionListener(e -> {
+            if (nombre.getText().isEmpty() || telefono.getText().isEmpty() || transaccion.getText().isEmpty()) {
+                JOptionPane.showMessageDialog(ventana, "Debes introducir todos los datos para completar la compra.");
+            } else if (!telefono.getText().matches("\\d{7}")) {
+                JOptionPane.showMessageDialog(ventana, "El teléfono debe tener exactamente 7 dígitos numéricos.");
+            } else if (!transaccion.getText().matches("\\d+")) {
+                JOptionPane.showMessageDialog(ventana, "El número de transacción debe contener solo dígitos.");
+            } else {
+                JOptionPane.showMessageDialog(ventana, "Compra exitosa, gracias por elegirnos.");
+                ventana.dispose();
+                ventanaPrincipal.dispose();
+            }
+        });
+
+        ventana.setVisible(true);
+    }
+
+    private void abrirVentanaEfectivo(JFrame ventanaPrincipal) {
+        JFrame ventana = new JFrame("Pago en Efectivo");
+        ventana.setSize(300, 200);
+        ventana.setLocationRelativeTo(null);
+        ventana.setLayout(new GridLayout(3, 2, 10, 10));
+        ventana.getContentPane().setBackground(new Color(204, 255, 204));
+
+        JTextField nombre = new JTextField();
+        JComboBox<String> billetes = new JComboBox<>(new String[]{"", "$2000", "$5000", "$10000", "$20000", "$50000"});
+        JButton confirmar = new JButton("Confirmar");
+        confirmar.setBackground(new Color(255, 204, 153));
+
+        ventana.add(new JLabel("Nombre:"));
+        ventana.add(nombre);
+        ventana.add(new JLabel("Billete con que pagará:"));
+        ventana.add(billetes);
+        ventana.add(new JLabel());
+        ventana.add(confirmar);
+
+        confirmar.addActionListener(e -> {
+            if (nombre.getText().isEmpty() || billetes.getSelectedIndex() == 0) {
+                JOptionPane.showMessageDialog(ventana, "Debes introducir todos los datos para completar la compra.");
+            } else {
+                JOptionPane.showMessageDialog(ventana, "Compra exitosa, gracias por elegirnos.");
+                ventana.dispose();
+                ventanaPrincipal.dispose();
+            }
+        });
+
+        ventana.setVisible(true);
+    }
+
+    private void abrirVentanaTarjeta(JFrame ventanaPrincipal) {
+        JFrame ventana = new JFrame("Pago con Tarjeta");
+        ventana.setSize(350, 250);
+        ventana.setLocationRelativeTo(null);
+        ventana.setLayout(new GridLayout(5, 2, 10, 10));
+        ventana.getContentPane().setBackground(new Color(204, 255, 204));
+
+        JTextField numeroTarjeta = new JTextField();
+        JTextField mes = new JTextField();
+        JTextField anio = new JTextField();
+        JTextField codigoSeguridad = new JTextField();
+        JButton confirmar = new JButton("Confirmar");
+        confirmar.setBackground(new Color(255, 204, 153));
+
+        ventana.add(new JLabel("Número de Tarjeta (16 dígitos):"));
+        ventana.add(numeroTarjeta);
+
+        JPanel panelFecha = new JPanel(new GridLayout(1, 2));
+        panelFecha.add(mes);
+        panelFecha.add(anio);
+        ventana.add(new JLabel("Fecha de Expedición (MM/AA):"));
+        ventana.add(panelFecha);
+
+        ventana.add(new JLabel("Código de Seguridad (3 dígitos):"));
+        ventana.add(codigoSeguridad);
+        ventana.add(new JLabel());
+        ventana.add(confirmar);
+
+        confirmar.addActionListener(e -> {
+            String numTarjeta = numeroTarjeta.getText();
+            String mm = mes.getText();
+            String yy = anio.getText();
+            String codigo = codigoSeguridad.getText();
+
+            if (numTarjeta.isEmpty() || mm.isEmpty() || yy.isEmpty() || codigo.isEmpty()) {
+                JOptionPane.showMessageDialog(ventana, "Debes introducir todos los datos para completar la compra.");
+            } else if (!numTarjeta.matches("\\d{16}")) {
+                JOptionPane.showMessageDialog(ventana, "El número de tarjeta debe tener exactamente 16 dígitos.");
+            } else if (!mm.matches("0[1-9]|1[0-2]")) {
+                JOptionPane.showMessageDialog(ventana, "Mes inválido. Usa formato MM (01 a 12).");
+            } else if (!yy.matches("\\d{2}")) {
+                JOptionPane.showMessageDialog(ventana, "Año inválido. Usa dos dígitos (AA).");
+            } else if (!codigo.matches("\\d{3}")) {
+                JOptionPane.showMessageDialog(ventana, "El código de seguridad debe tener 3 dígitos.");
+            } else {
+                JOptionPane.showMessageDialog(ventana, "Compra exitosa, gracias por elegirnos.");
+                ventana.dispose();
+                ventanaPrincipal.dispose();
+            }
+        });
+
+        ventana.setVisible(true);
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            VentanaPago ventana = new VentanaPago();
+            ventana.setVisible(true);
+        });
+    }
+}
+
+
+

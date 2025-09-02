@@ -1,0 +1,245 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class SupermercadoAdmin extends JFrame {
+    private CardLayout cardLayout;
+    private JPanel contentPanel;
+    private String csvPath = "productos.csv";
+    private List<String[]> productos = new ArrayList<>();
+
+    public SupermercadoAdmin() {
+        setTitle("Panel Administrador - Supermercado");
+        setSize(800, 600);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout());
+
+        cargarProductos();
+
+        // Panel lateral con botones
+        JPanel menuPanel = new JPanel(new GridLayout(4, 1, 10, 10));
+        menuPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        JButton agregarBtn = new JButton("1. Agregar Producto");
+        JButton modificarBtn = new JButton("2. Modificar Precio");
+        JButton ventasBtn = new JButton("3. Mostrar Ventas");
+        JButton pdfBtn = new JButton("4. Generar Informe PDF");
+
+        menuPanel.add(agregarBtn);
+        menuPanel.add(modificarBtn);
+        menuPanel.add(ventasBtn);
+        menuPanel.add(pdfBtn);
+        add(menuPanel, BorderLayout.WEST);
+
+        // Panel central con CardLayout
+        contentPanel = new JPanel();
+        cardLayout = new CardLayout();
+        contentPanel.setLayout(cardLayout);
+
+        contentPanel.add(crearPanelAgregar(), "agregar");
+        contentPanel.add(crearPanelModificar(), "modificar");
+        contentPanel.add(crearPanelVentas(), "ventas");
+        contentPanel.add(crearPanelPDF(), "pdf");
+
+        add(contentPanel, BorderLayout.CENTER);
+
+        // Eventos
+        agregarBtn.addActionListener(e -> cardLayout.show(contentPanel, "agregar"));
+        modificarBtn.addActionListener(e -> cardLayout.show(contentPanel, "modificar"));
+        ventasBtn.addActionListener(e -> cardLayout.show(contentPanel, "ventas"));
+        pdfBtn.addActionListener(e -> cardLayout.show(contentPanel, "pdf"));
+    }
+
+    // ===== PANEL: AGREGAR PRODUCTO =====
+    private JPanel crearPanelAgregar() {
+        JPanel panel = new JPanel(new GridLayout(4, 2, 5, 5));
+        panel.setBorder(BorderFactory.createTitledBorder("Agregar Producto"));
+
+        JTextField nombreField = new JTextField();
+        JTextField precioField = new JTextField();
+        JTextField categoriaField = new JTextField();
+        JButton guardarBtn = new JButton("Guardar");
+
+        panel.add(new JLabel("Nombre:"));
+        panel.add(nombreField);
+        panel.add(new JLabel("Precio:"));
+        panel.add(precioField);
+        panel.add(new JLabel("Categoría:"));
+        panel.add(categoriaField);
+        panel.add(new JLabel());
+        panel.add(guardarBtn);
+
+        guardarBtn.addActionListener(e -> {
+            String nombre = nombreField.getText().trim();
+            String precio = precioField.getText().trim();
+            String categoria = categoriaField.getText().trim();
+            if (!nombre.isEmpty() && !precio.isEmpty() && !categoria.isEmpty()) {
+                productos.add(new String[]{nombre, precio, categoria});
+                guardarProductos();
+                JOptionPane.showMessageDialog(this, "Producto agregado.");
+                nombreField.setText(""); precioField.setText(""); categoriaField.setText("");
+            } else {
+                JOptionPane.showMessageDialog(this, "Completa todos los campos.");
+            }
+        });
+
+        return panel;
+    }
+
+    // ===== PANEL: MODIFICAR PRECIO =====
+    private JPanel crearPanelModificar() {
+        JPanel panel = new JPanel(new GridLayout(3, 2, 5, 5));
+        panel.setBorder(BorderFactory.createTitledBorder("Modificar Precio"));
+
+        JTextField nombreField = new JTextField();
+        JTextField nuevoPrecioField = new JTextField();
+        JButton actualizarBtn = new JButton("Actualizar");
+
+        panel.add(new JLabel("Nombre del producto:"));
+        panel.add(nombreField);
+        panel.add(new JLabel("Nuevo precio:"));
+        panel.add(nuevoPrecioField);
+        panel.add(new JLabel());
+        panel.add(actualizarBtn);
+
+        actualizarBtn.addActionListener(e -> {
+            String nombre = nombreField.getText().trim();
+            String nuevoPrecio = nuevoPrecioField.getText().trim();
+            boolean encontrado = false;
+
+            for (String[] prod : productos) {
+                if (prod[0].equalsIgnoreCase(nombre)) {
+                    prod[1] = nuevoPrecio;
+                    encontrado = true;
+                    break;
+                }
+            }
+
+            if (encontrado) {
+                guardarProductos();
+                JOptionPane.showMessageDialog(this, "Precio actualizado.");
+            } else {
+                JOptionPane.showMessageDialog(this, "Producto no encontrado.");
+            }
+        });
+
+        return panel;
+    }
+
+    // ===== PANEL: MOSTRAR VENTAS =====
+    private JPanel crearPanelVentas() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(BorderFactory.createTitledBorder("Ventas"));
+
+        JTextArea ventasArea = new JTextArea("Aquí se mostrarán las ventas (simulado).");
+        panel.add(new JScrollPane(ventasArea), BorderLayout.CENTER);
+
+        return panel;
+    }
+
+    // ===== PANEL: GENERAR PDF =====
+    private JPanel crearPanelPDF() {
+        JPanel panel = new JPanel();
+        panel.setBorder(BorderFactory.createTitledBorder("Generar PDF"));
+
+        JButton generarPDFBtn = new JButton("Generar PDF");
+        generarPDFBtn.addActionListener(e -> JOptionPane.showMessageDialog(this, "PDF generado (simulado)."));
+
+        panel.add(generarPDFBtn);
+        return panel;
+    }
+
+    // ===== PRODUCTOS: CARGAR Y GUARDAR CSV =====
+    private void cargarProductos() {
+        productos.clear();
+        File archivo = new File(csvPath);
+        if (!archivo.exists()) return;
+
+        try (BufferedReader br = new BufferedReader(new FileReader(archivo))) {
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                productos.add(linea.split(";"));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void guardarProductos() {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(csvPath))) {
+            for (String[] prod : productos) {
+                bw.write(String.join(";", prod));
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // ===== LOGIN & REGISTRO =====
+    private static void mostrarLogin() {
+        File archivoCredenciales = new File("credenciales.txt");
+        if (!archivoCredenciales.exists()) {
+            registrarNuevoUsuario(archivoCredenciales);
+        }
+
+        while (true) {
+            JTextField usuarioField = new JTextField();
+            JPasswordField claveField = new JPasswordField();
+            Object[] campos = {
+                "Usuario:", usuarioField,
+                "Contraseña:", claveField
+            };
+
+            int opcion = JOptionPane.showConfirmDialog(null, campos, "Login", JOptionPane.OK_CANCEL_OPTION);
+            if (opcion != JOptionPane.OK_OPTION) System.exit(0);
+
+            String usuarioIngresado = usuarioField.getText();
+            String claveIngresada = new String(claveField.getPassword());
+
+            try (BufferedReader br = new BufferedReader(new FileReader(archivoCredenciales))) {
+                String usuario = br.readLine();
+                String clave = br.readLine();
+
+                if (usuario.equals(usuarioIngresado) && clave.equals(claveIngresada)) {
+                    SwingUtilities.invokeLater(() -> new SupermercadoAdmin().setVisible(true));
+                    break;
+                } else {
+                    JOptionPane.showMessageDialog(null, "Usuario o contraseña incorrectos.");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static void registrarNuevoUsuario(File archivoCredenciales) {
+        JTextField usuarioField = new JTextField();
+        JPasswordField claveField = new JPasswordField();
+        Object[] campos = {
+            "Nuevo usuario:", usuarioField,
+            "Nueva contraseña:", claveField
+        };
+
+        int opcion = JOptionPane.showConfirmDialog(null, campos, "Registrar administrador", JOptionPane.OK_CANCEL_OPTION);
+        if (opcion == JOptionPane.OK_OPTION) {
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(archivoCredenciales))) {
+                bw.write(usuarioField.getText());
+                bw.newLine();
+                bw.write(new String(claveField.getPassword()));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.exit(0);
+        }
+    }
+
+    public static void main(String[] args) {
+        mostrarLogin();
+    }
+}
